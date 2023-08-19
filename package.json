@@ -1,0 +1,101 @@
+{
+  "name": "@alldogs/hotenv",
+  "version": "0.0.0",
+  "author": "Alec Helmturner",
+  "license": "ISC",
+  "description": "The hottest env loader for Tamagui monorepos",
+  "engineStrict": true,
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "dev": "vitest --coverage --ui",
+    "test": "vitest run --coverage && vitest typecheck --run",
+    "build": "tsup",
+    "ci": "npm ci && npm run test && npm run build",
+    "release": "npm run ci && npm publish --access=public",
+    "clean": "rm -rf dist && rm -rf coverage && rm -rf node_modules"
+  },
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/*"
+  ],
+  "bin": {
+    "hotenv": "./dist/index.js"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alecvision/hotenv.git"
+  },
+  "bugs": {
+    "url": "https://github.com/alecvision/hotenv/issues"
+  },
+  "keywords": [
+    "hotenv",
+    "dotenv",
+    "t3-env",
+    "env",
+    "tamagui",
+    "monorepo",
+    "nextjs",
+    "expo"
+  ],
+  "prettier": {
+    "semi": true,
+    "trailingComma": "none",
+    "arrowParens": "avoid",
+    "tabWidth": 2
+  },
+  "tsup": {
+    "banner": {
+      "js": "#!/usr/bin/env node\n"
+    },
+    "minify": true,
+    "minifyIdentifiers": true,
+    "minifySyntax": true,
+    "minifyWhitespace": true,
+    "skipNodeModulesBundle": true,
+    "treeshake": true,
+    "clean": true,
+    "dts": true,
+    "sourcemap": true,
+    "globalName": "hotenv",
+    "noExternal": [
+      "commander"
+    ],
+    "platform": "node",
+    "target": "node18",
+    "tsconfig": "tsconfig.json",
+    "define": {
+      "import.meta.vitest": "undefined"
+    },
+    "entry": [
+      "./src/index.ts"
+    ],
+    "outDir": "./dist",
+    "format": [
+      "esm",
+      "cjs"
+    ]
+  },
+  "devDependencies": {
+    "@commander-js/extra-typings": "^11.0.0",
+    "@vitest/coverage-v8": "^0.34.2",
+    "prettier": "^3.0.2",
+    "tsup": "^7.2.0",
+    "typescript": "^5.1.6",
+    "vitest": "^0.34.2"
+  },
+  "dependencies": {
+    "commander": "^11.0.0"
+  }
+}

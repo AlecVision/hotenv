@@ -1,0 +1,32 @@
+{
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "extends": "./tsconfig.strict.json",
+    "include": [
+        "src"
+    ],
+    "compilerOptions": {
+        "incremental": false,
+        "baseUrl": ".",
+        "outDir": "dist",
+        "rootDir": "src",
+        "declarationMap": true,
+        "sourceMap": true,
+        "composite": false,
+        "noEmit": false,
+        "allowJs": true,
+        "skipLibCheck": true,
+        "esModuleInterop": true,
+        "moduleResolution": "node",
+        "resolveJsonModule": true,
+        "allowSyntheticDefaultImports": true,
+        "isolatedModules": true,
+        "jsx": "preserve",
+        "declaration": true,
+        "target": "ES2022",
+        "removeComments": true,
+        "module": "CommonJS",
+        "types": [
+            "vitest/importMeta"
+        ]
+    }
+}
