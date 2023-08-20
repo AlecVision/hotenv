@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.3](https://github.com/AlecVision/hotenv/compare/hotenv-v0.0.2...hotenv-v0.0.3) (2023-08-20)
+
+
+### Bug Fixes
+
+* correct package name ([#8](https://github.com/AlecVision/hotenv/issues/8)) ([92241a6](https://github.com/AlecVision/hotenv/commit/92241a6d6e8d050f3adb218e0bcb893cc73d87fa))
+
 ## [0.0.2](https://github.com/AlecVision/hotenv/compare/hotenv-v0.0.1...hotenv-v0.0.2) (2023-08-20)
 
 
