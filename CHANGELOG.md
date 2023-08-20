@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.4](https://github.com/AlecVision/hotenv/compare/hotenv-v0.0.3...hotenv-v0.0.4) (2023-08-20)
+
+
+### Bug Fixes
+
+* use cjs for cli ([#10](https://github.com/AlecVision/hotenv/issues/10)) ([3f647f6](https://github.com/AlecVision/hotenv/commit/3f647f6648aa991e70bfdabc965e565be193a3aa))
+
 ## [0.0.3](https://github.com/AlecVision/hotenv/compare/hotenv-v0.0.2...hotenv-v0.0.3) (2023-08-20)
 
 
