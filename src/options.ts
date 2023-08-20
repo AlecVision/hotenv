@@ -87,3 +87,13 @@ export const verbose = createOption(
     .default("development" as const)
     .makeOptionMandatory();
   
+    //@ts-expect-error - Vite handles this import.meta check
+if (import.meta.vitest) {
+  const [
+    { describe }
+    //@ts-expect-error - Vite handles this top-level await
+  ] = await Promise.all([import("vitest")]);
+
+  describe.skip("helptexg", () => {});
+
+}
