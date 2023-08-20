@@ -7,7 +7,7 @@ import {
   readdirSync
 } from "fs";
 import { basename, resolve, join } from "path";
-import { spawnSync } from "child_process";
+import { spawn } from "child_process";
 import { program, createArgument } from "@commander-js/extra-typings";
 import { watermark } from "./watermark";
 import {
@@ -141,7 +141,7 @@ const config = commands.config
       process.exit(1);
     }
 
-    const child = spawnSync(cmd, args, {
+    const child = spawn(cmd, args, {
       env: Object.assign({}, process.env, {
         TAMAGUI_TARGET: platform,
         NODE_ENV: env,
@@ -149,11 +149,14 @@ const config = commands.config
         SHOW_FULL_BUNDLE_ERRORS: verbose ? "1" : "0",
         DISABLE_EXTRACTION: env === "production" ? "0" : "1"
       }),
+      shell: true,
       stdio: "inherit",
       cwd: process.cwd()
     });
 
-    process.exit(child.status ?? 1);
+    child.on("close", code => {
+      process.exit(code ?? 1);
+    });
   });
 
 export const cli = hotenv.addCommand(generate).addCommand(config);
