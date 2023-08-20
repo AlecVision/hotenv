@@ -13,7 +13,7 @@
     "test": "vitest run --coverage && vitest typecheck --run",
     "build": "tsup",
     "ci": "pnpm install --frozen-lockfile && pnpm run test && pnpm run build",
-    "release": "pnpm run ci && npm publish --access=public",
+    "release": "pnpm run ci && pnpm publish --access=public",
     "clean": "rm -rf dist && rm -rf coverage && rm -rf node_modules"
   },
   "main": "dist/index.js",
