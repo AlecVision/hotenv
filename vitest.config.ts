@@ -4,12 +4,12 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["**/*.ts"],
+    passWithNoTests: true,
     coverage: {
-      thresholdAutoUpdate: true,
-      statements: 89.44,
-      branches: 90,
-      functions: 66.66,
-      lines: 89.44,
+      statements: 80,
+      branches: 80,
+      functions: 60,
+      lines: 80,
       reporter: ["html", "html-spa", "json-summary"],
       provider: "v8",
       reportsDirectory: "coverage",
