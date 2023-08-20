@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.2](https://github.com/AlecVision/hotenv/compare/hotenv-v0.0.1...hotenv-v0.0.2) (2023-08-20)
+
+
+### Bug Fixes
+
+* cleaner reporting ([#6](https://github.com/AlecVision/hotenv/issues/6)) ([2cd09ae](https://github.com/AlecVision/hotenv/commit/2cd09ae5fa59322c36e0828e2f68430148de136a))
+
 ## 0.0.1 (2023-08-20)
 
 
