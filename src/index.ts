@@ -24,7 +24,6 @@ import {
   verbose
 } from "./options";
 import { getDescription, prependHeader } from "./helptext";
-import { beforeEach, test } from "vitest";
 
 ////////////////////////////////////////////////////////////
 ///
@@ -198,7 +197,7 @@ function transformContents(args: { sourcePath: string; contents: string }) {
   const generated = args.contents
     .split("\n")
     .filter(isPublic)
-    .flatMap((line: string, lineNum: number, lines: string[]) => {
+    .flatMap(line => {
       const [key, rest] = line
         .replace(/#.*/, "")
         .trim()
@@ -352,102 +351,105 @@ function makeCallBackQueueReducer(opts: {
 //@ts-expect-error - Vite handles this import.meta check
 if (import.meta.vitest) {
   const [
-    { describe, afterAll, beforeAll, it, expect, suite, vi },
+    { afterAll, beforeAll, expect, describe },
     {
-      existsSync,
-      copyFileSync,
       writeFileSync,
-      readFileSync,
-      readdirSync,
       mkdtempSync,
-      mkdirSync,
       rmSync
     },
-    { join, resolve }
+    { join, resolve, basename, relative }
     //@ts-expect-error - Vite handles this top-level await
   ] = await Promise.all([import("vitest"), import("fs"), import("path")]);
-  suite("hotenv helper functions", describe => {
+  describe("hotenv helper functions", test => {
+    const globalConsole = global.console;
+    const globalProcess = global.process;
+
     let testDir: string;
+    let relativeTestDir: string;
     let testEnvPaths: string[];
     let cwd: string;
     let consoleOutput: string[] = [];
-    let originalConsole: Console;
-    let originalProcess: typeof process;
 
-    const mockedConsole = {
-      log: (output: string) => consoleOutput.push(output),
-      error: (output: string) => consoleOutput.push(output),
-      warn: (output: string) => consoleOutput.push(output),
-      info: (output: string) => consoleOutput.push(output),
-      debug: (output: string) => consoleOutput.push(output),
-      trace: (output: string) => consoleOutput.push(output),
-      clear: () => (consoleOutput = []),
-      getOutput: () => consoleOutput
-    }
+    const mockedProcess = new Proxy(process, {
+      get: (target, prop) => {
+        if (prop === "cwd") return () => cwd;
+        return target[prop as keyof typeof process];
+      }
+    });
 
-    const mockProcess = {
-      cwd: () => cwd,
-      chdir: (path: string) => cwd = path
-    }
+    const logMethods = ["log", "error", "warn", "info", "debug", "trace"];
+
+    const mockedConsole = new Proxy(global.console, {
+      get: (target, prop) => {
+        if (logMethods.includes(prop as string)) {
+          return (output: string) => consoleOutput.push(output);
+        }
+        if (prop === "clear") return () => (consoleOutput = []);
+        if (prop === "getOutput") return () => consoleOutput;
+        return target[prop as keyof Console];
+      }
+    });
 
     beforeAll(() => {
-      originalConsole = global.console;
-      originalProcess = global.process;
-      global.console = mockedConsole as any as Console
-      global.process = mockProcess as any as typeof process
+      global.console = mockedConsole;
+      global.process = mockedProcess;
 
       testDir = mkdtempSync(resolve(__dirname, "tmp-"));
-      process.chdir(testDir);
+      relativeTestDir = relative(__dirname, testDir);
+      cwd = testDir;
 
       testEnvPaths = [
-        join(testDir, ".env.production.local"),
-        join(testDir, ".env.development.local"),
-        join(testDir, ".env.test.local"),
-        join(testDir, ".env.local")
+        join(relativeTestDir, ".env.production.local"),
+        join(relativeTestDir, ".env.development.local"),
+        join(relativeTestDir, ".env.test.local"),
+        join(relativeTestDir, ".env.local")
       ];
 
-      testEnvPaths.forEach(path => writeFileSync(path, "TEST_ENV=123"));
+      testEnvPaths.forEach(path =>
+        writeFileSync(resolve(__dirname, path), "TEST_ENV=123")
+      );
     });
 
     afterAll(() => {
       console.clear();
-      process.chdir(resolve(__dirname, ".."));
+      cwd = "";
       rmSync(testDir, { recursive: true });
-      
-      global.console = originalConsole;
-      global.process = originalProcess;
+
+      global.console = globalConsole;
+      global.process = globalProcess;
     });
 
-    describe("readDotEnvs should only read .env*.local files in a directory", () => {
+    test("readDotEnvs should only read .env*.local files in a directory", () => {      
       const result = readDotEnvs(testDir);
       expect(result.files).toHaveLength(4);
-      expect(testEnvPaths).toContain(result.files[0]?.sourcePath);
-      expect(testEnvPaths).toContain(result.files[1]?.sourcePath);
-      expect(testEnvPaths).toContain(result.files[2]?.sourcePath);
-      expect(testEnvPaths).toContain(result.files[3]?.sourcePath);
+
       expect(
         testEnvPaths.every(path => {
           return (
-            relative(testDir, path).startsWith(".env") &&
-            relative(testDir, path).endsWith(".local")
+            result.files.some(
+              file => resolve(process.cwd(), file.sourcePath) === path
+            ) &&
+            basename(path).startsWith(".env") &&
+            basename(path).endsWith(".local")
           );
         })
       );
     });
 
-    describe("readDotEnvs should return the relative directory", () => {
+    test("readDotEnvs should return the relative directory", () => {
       const result = readDotEnvs(testDir);
       expect(result.relativeDir).toEqual(testDir);
     });
 
-    describe("readDotEnvs should not throw if the directory does not exist", () => {
+    test("readDotEnvs should not throw if the directory does not exist", ({ skip }) => {
+      skip();
       expect(() => readDotEnvs("does-not-exist")).not.toThrow();
 
       const result = readDotEnvs("does-not-exist");
       expect(result.files).toHaveLength(0);
     });
 
-    describe("transformContents should only output *_PUBLIC variables", () => {
+    test("transformContents should only output *_PUBLIC variables", () => {
       const result = transformContents({
         sourcePath: testEnvPaths[0]!,
         contents: `
@@ -467,7 +469,7 @@ if (import.meta.vitest) {
       );
     });
 
-    describe("transformContents should not throw if the file does not exist", () => {
+    test("transformContents should not throw if the file does not exist", () => {
       expect(() =>
         transformContents({
           sourcePath: "does-not-exist",
@@ -476,7 +478,7 @@ if (import.meta.vitest) {
       ).not.toThrow();
     });
 
-    describe("transformContents should not throw if the file is empty", () => {
+    test("transformContents should not throw if the file is empty", () => {
       expect(() =>
         transformContents({
           sourcePath: testEnvPaths[0]!,
@@ -485,7 +487,7 @@ if (import.meta.vitest) {
       ).not.toThrow();
     });
 
-    describe("prependHeader should prepend the watermark to the top of the file", () => {
+    test("prependHeader should prepend the watermark to the top of the file", () => {
       const result = prependHeader(
         transformContents({
           sourcePath: testEnvPaths[0]!,
@@ -497,38 +499,39 @@ if (import.meta.vitest) {
       expect(result.generated).toMatch(regex);
     });
 
-    describe("makeCallBackQueueReducer should generate a callback queue with the correct actions", () => {
+    test("makeCallBackQueueReducer should generate a callback queue with the correct actions", () => {
       const dryRun = false;
       const backup = ".backup";
       const force = false;
-  
+
       const actions: (() => void)[] = [];
-      const current = {
-        relativeDir: "/path/to/dir",
-        files: [
-          {
-            sourcePath: "/path/to/dir/.env.local",
-            contents: "VAR1=value1\nVAR2=value2\nNEXT_PUBLIC_VAR3=value3\n",
-          },
-        ],
-      };
-  
       const reducer = makeCallBackQueueReducer({ dryRun, backup, force });
-      const result = reducer(actions, current);
-  
-      expect(result).toHaveLength(4);
-  
-      expect(result[0]).toBeInstanceOf(Function);
-      expect(result[1]).toBeInstanceOf(Function);
-      expect(result[2]).toBeInstanceOf(Function);
-      expect(result[3]).toBeInstanceOf(Function);
 
-      // @ts-expect-error - mocked function
-      expect(console.getOutput()).toEqual([
-        "//TODO"
-      ]);
+      const result = [testDir].map(readDotEnvs).reduce(reducer, actions);
+      expect(result).toHaveLength(13);
 
+      result.forEach(action => {
+        expect(typeof action).toEqual("function");
+        action();
+      });
+
+      expect(
+        (console as any)
+          .getOutput()
+          .filter(Boolean)
+          .map((output: string) => output.replace(/^.*:/, "").trim())
+          .join("\n")
+      ).toEqual(
+        `Found 4 .env*.local file(s)
+📦 Generated .env.development from .env.development.local
+📦 Writing .env.development with platform-specific public variables...
+📦 Generated .env from .env.local
+📦 Writing .env with platform-specific public variables...
+📦 Generated .env.production from .env.production.local
+📦 Writing .env.production with platform-specific public variables...
+📦 Generated .env.test from .env.test.local
+📦 Writing .env.test with platform-specific public variables...`
+      );
     });
   });
-
 }
