@@ -5,7 +5,7 @@
   "license": "ISC",
   "description": "The hottest env loader for Tamagui monorepos",
   "engineStrict": true,
-  "packageManager": "pnpm@8.6.12",
+  "packageManager": "npm@9.8.0",
   "engines": {
     "node": ">=18.0.0"
   },
@@ -13,8 +13,8 @@
     "dev": "vitest --coverage --ui",
     "test": "vitest run --coverage && vitest typecheck --run",
     "build": "tsup",
-    "ci": "pnpm install --frozen-lockfile && pnpm run test && pnpm run build",
-    "release": "pnpm run ci && pnpm publish --access=public",
+    "ci": "npm ci && npm run test && npm run build",
+    "release": "npm run ci && npm publish --access=public",
     "clean": "rm -rf dist && rm -rf coverage && rm -rf node_modules"
   },
   "main": "dist/index.js",

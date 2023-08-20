@@ -11,10 +11,6 @@ on:
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
-  install:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: pnpm/action-setup@v2
   build:
     runs-on: ubuntu-latest
     strategy:
@@ -23,9 +19,9 @@ jobs:
     name: Node ${{ matrix.node }} build test
     steps:
       - uses: actions/checkout@v3
-      - uses: pnpm/action-setup@v2
       - uses: actions/setup-node@v3
         with: 
           node-version: ${{ matrix.node }}
-          cache: "pnpm"
-      - run: pnpm run ci
+          cache: "npm"
+      - run: npm install -g npm@latest
+      - run: npm run ci
